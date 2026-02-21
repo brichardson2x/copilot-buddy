@@ -66,14 +66,15 @@ export class GitHubAuthClient {
     return new Octokit({ auth: token });
   }
 
-  public async postComment(owner: string, repo: string, issueNumber: number, body: string): Promise<void> {
+  public async postComment(owner: string, repo: string, issueNumber: number, body: string): Promise<number> {
     const client = await this.getInstallationClient();
-    await client.issues.createComment({
+    const response = await client.issues.createComment({
       owner,
       repo,
       issue_number: issueNumber,
       body
     });
+    return response.data.id;
   }
 }
 
@@ -89,6 +90,6 @@ export async function postComment(
   repo: string,
   issueNumber: number,
   body: string
-): Promise<void> {
-  await getGitHubAuthClient().postComment(owner, repo, issueNumber, body);
+): Promise<number> {
+  return getGitHubAuthClient().postComment(owner, repo, issueNumber, body);
 }

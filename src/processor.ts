@@ -1,12 +1,14 @@
-import { insertTask, updateEventStatus, updateTaskStatus } from './db';
-import { appendHistory, readHistory } from './history';
+import { insertTask, updateTaskStatus } from './db';
+import { readHistory } from './history';
 import { buildPrompt, parseModelOverride, resolveModel } from './prompt';
 import type { ProcessEventInput } from './webhook';
 import { callCopilot } from './copilot';
 
 export interface ProcessEventResult {
+  taskId: number;
   responseText: string;
   model: string;
+  userMessage: string;
 }
 
 export async function processEvent(input: ProcessEventInput): Promise<ProcessEventResult> {
@@ -33,26 +35,9 @@ export async function processEvent(input: ProcessEventInput): Promise<ProcessEve
     });
 
     const responseText = await callCopilot(prompt, model || undefined);
-
-    await appendHistory(input.context, [
-      {
-        role: 'User',
-        sender: input.context.sender,
-        message: strippedBody
-      },
-      {
-        role: 'Agent',
-        message: responseText
-      }
-    ]);
-
-    updateTaskStatus(taskId, 'done');
-    updateEventStatus(input.eventId, 'done');
-
-    return { responseText, model };
+    return { taskId, responseText, model, userMessage: strippedBody };
   } catch (error) {
     updateTaskStatus(taskId, 'failed');
-    updateEventStatus(input.eventId, 'error', error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }
