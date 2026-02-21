@@ -165,6 +165,12 @@ const getEventByIdStatement = db.prepare(`
   WHERE event_id = ?
 `);
 
+const getThreadStateStatement = db.prepare(`
+  SELECT message_count AS messageCount
+  FROM thread_state
+  WHERE thread_key = ?
+`);
+
 export function insertEvent(input: InsertEventInput): number {
   const result = insertEventStatement.run({
     eventId: input.eventId,
@@ -211,6 +217,12 @@ export function upsertThreadState(input: UpsertThreadStateInput): void {
     messageCount: input.messageCount,
     lastActivity: input.lastActivity ?? new Date().toISOString()
   });
+}
+
+export function getThreadState(
+  threadKey: string
+): { messageCount?: number } | undefined {
+  return getThreadStateStatement.get(threadKey) as { messageCount?: number } | undefined;
 }
 
 export function getEventById(eventId: string): WebhookEvent | undefined {
