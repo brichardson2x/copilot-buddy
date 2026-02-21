@@ -1,18 +1,16 @@
-import { insertTask, updateEventStatus, updateTaskStatus } from './db';
-import { appendHistory, readHistory } from './history';
+import { insertTask, updateTaskStatus } from './db';
+import { readHistory } from './history';
 import { buildPrompt, parseModelOverride, resolveModel } from './prompt';
 import { callCopilot } from './copilot';
 import { processEvent } from './processor';
 
 jest.mock('./db', () => ({
   insertTask: jest.fn(),
-  updateTaskStatus: jest.fn(),
-  updateEventStatus: jest.fn()
+  updateTaskStatus: jest.fn()
 }));
 
 jest.mock('./history', () => ({
-  readHistory: jest.fn(),
-  appendHistory: jest.fn()
+  readHistory: jest.fn()
 }));
 
 jest.mock('./prompt', () => ({
@@ -27,9 +25,7 @@ jest.mock('./copilot', () => ({
 
 const mockedInsertTask = insertTask as jest.MockedFunction<typeof insertTask>;
 const mockedUpdateTaskStatus = updateTaskStatus as jest.MockedFunction<typeof updateTaskStatus>;
-const mockedUpdateEventStatus = updateEventStatus as jest.MockedFunction<typeof updateEventStatus>;
 const mockedReadHistory = readHistory as jest.MockedFunction<typeof readHistory>;
-const mockedAppendHistory = appendHistory as jest.MockedFunction<typeof appendHistory>;
 const mockedParseModelOverride = parseModelOverride as jest.MockedFunction<typeof parseModelOverride>;
 const mockedResolveModel = resolveModel as jest.MockedFunction<typeof resolveModel>;
 const mockedBuildPrompt = buildPrompt as jest.MockedFunction<typeof buildPrompt>;
@@ -62,7 +58,6 @@ describe('processEvent', () => {
     mockedReadHistory.mockResolvedValue('history block');
     mockedBuildPrompt.mockReturnValue('built prompt');
     mockedCallCopilot.mockResolvedValue('assistant reply');
-    mockedAppendHistory.mockResolvedValue(undefined);
   });
 
   it('runs the success pipeline in exact order', async () => {
@@ -95,16 +90,9 @@ describe('processEvent', () => {
       order.push('call copilot');
       return 'assistant reply';
     });
-    mockedAppendHistory.mockImplementation(async () => {
-      order.push('append history');
-    });
-    mockedUpdateEventStatus.mockImplementation((_eventId, status) => {
-      order.push(`event ${status}`);
-    });
-
     const result = await processEvent(input);
 
-    expect(result).toEqual({ responseText: 'assistant reply', model: 'gpt-5' });
+    expect(result).toEqual({ taskId: 10, responseText: 'assistant reply', model: 'gpt-5', userMessage: 'hello' });
     expect(order).toEqual([
       'parse override',
       'resolve model',
@@ -112,23 +100,38 @@ describe('processEvent', () => {
       'task running',
       'read history',
       'build prompt',
-      'call copilot',
-      'append history',
-      'task done',
-      'event done'
+      'call copilot'
     ]);
   });
 
-  it('marks task and event as failed when pipeline throws', async () => {
+  it('uses stripped model override body from webhook comment', async () => {
+    const overrideInput = {
+      ...input,
+      context: {
+        ...input.context,
+        commentBody: 'MODEL: gpt-5\nplease summarize this'
+      }
+    };
+    mockedParseModelOverride.mockReturnValue({
+      modelOverride: 'gpt-5',
+      strippedBody: 'please summarize this'
+    });
+
+    await processEvent(overrideInput);
+
+    expect(mockedParseModelOverride).toHaveBeenCalledWith('MODEL: gpt-5\nplease summarize this');
+    expect(mockedBuildPrompt).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'please summarize this' })
+    );
+  });
+
+  it('marks task as failed when pipeline throws', async () => {
     mockedCallCopilot.mockRejectedValue(new Error('copilot boom'));
 
     await expect(processEvent(input)).rejects.toThrow('copilot boom');
 
     expect(mockedUpdateTaskStatus).toHaveBeenCalledWith(10, 'running');
     expect(mockedUpdateTaskStatus).toHaveBeenCalledWith(10, 'failed');
-    expect(mockedUpdateEventStatus).toHaveBeenCalledWith('evt-1', 'error', 'copilot boom');
-    expect(mockedAppendHistory).not.toHaveBeenCalled();
     expect(mockedUpdateTaskStatus).not.toHaveBeenCalledWith(10, 'done');
-    expect(mockedUpdateEventStatus).not.toHaveBeenCalledWith('evt-1', 'done');
   });
 });
