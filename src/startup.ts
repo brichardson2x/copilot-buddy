@@ -3,7 +3,6 @@ import { validateCopilotToken } from './copilot';
 
 export async function validateTokens(): Promise<void> {
   if (process.env.TEST_MODE === 'true') {
-    console.error('FATAL: TEST_MODE enabled; skipping token validation.');
     return;
   }
 
@@ -13,7 +12,7 @@ export async function validateTokens(): Promise<void> {
       env: { ...process.env, GH_TOKEN: process.env.GH_TOKEN ?? '' }
     });
   } catch (error) {
-    console.error('FATAL: GitHub CLI authentication failed. Set GH_TOKEN and run gh auth status.');
+    console.error('FATAL: GH_TOKEN is invalid or expired — gh auth status failed');
     throw error;
   }
 
@@ -23,9 +22,7 @@ export async function validateTokens(): Promise<void> {
       throw new Error('Copilot token validation failed');
     }
   } catch (error) {
-    console.error(
-      'FATAL: Copilot token validation failed. Ensure COPILOT_GITHUB_TOKEN is valid.'
-    );
+    console.error('FATAL: COPILOT_GITHUB_TOKEN is invalid or expired — Copilot auth check failed');
     throw error;
   }
 }
