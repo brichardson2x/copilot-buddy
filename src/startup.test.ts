@@ -35,7 +35,7 @@ describe('validateTokens', () => {
 
     await validateTokens();
 
-    expect(errorSpy).toHaveBeenCalledWith('FATAL: TEST_MODE enabled; skipping token validation.');
+    expect(errorSpy).not.toHaveBeenCalled();
     expect(mockedExecSync).not.toHaveBeenCalled();
     expect(mockedValidateCopilotToken).not.toHaveBeenCalled();
     errorSpy.mockRestore();
@@ -51,7 +51,7 @@ describe('validateTokens', () => {
     await expect(validateTokens()).rejects.toThrow('gh auth failed');
 
     expect(errorSpy).toHaveBeenCalledWith(
-      'FATAL: GitHub CLI authentication failed. Set GH_TOKEN and run gh auth status.'
+      'FATAL: GH_TOKEN is invalid or expired — gh auth status failed'
     );
     expect(mockedValidateCopilotToken).not.toHaveBeenCalled();
     errorSpy.mockRestore();
@@ -65,7 +65,7 @@ describe('validateTokens', () => {
     await expect(validateTokens()).rejects.toThrow('Copilot token validation failed');
 
     expect(errorSpy).toHaveBeenCalledWith(
-      'FATAL: Copilot token validation failed. Ensure COPILOT_GITHUB_TOKEN is valid.'
+      'FATAL: COPILOT_GITHUB_TOKEN is invalid or expired — Copilot auth check failed'
     );
     errorSpy.mockRestore();
   });

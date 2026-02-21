@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "eslint \"src/**/*.ts\" --format json",
     "typecheck": "tsc --noEmit",
-    "integration-test": "jest --runInBand --runTestsByPath src/startup.test.ts src/index.startup.test.ts"
+    "integration-test": "jest --runInBand --runTestsByPath src/startup.test.ts src/index.startup.test.ts src/webhook.test.ts"
   },
   "repository": {
     "type": "git",
