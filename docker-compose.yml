@@ -1,0 +1,19 @@
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DOCKER_GID: ${DOCKER_GID:-999}
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./certs:/certs:ro
+      - home_path:${HOME_PATH}
+      - ./data:/app/data
+
+volumes:
+  home_path:
