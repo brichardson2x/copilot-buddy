@@ -1,0 +1,48 @@
+{
+  "name": "copilot-buddy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --passWithNoTests",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "integration-test": "echo \"Integration tests not implemented yet\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brichardson2x/copilot-buddy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brichardson2x/copilot-buddy/issues"
+  },
+  "homepage": "https://github.com/brichardson2x/copilot-buddy#readme",
+  "private": true,
+  "dependencies": {
+    "@github/copilot-sdk": "0.1.25",
+    "@octokit/rest": "22.0.1",
+    "better-sqlite3": "12.6.2",
+    "dotenv": "17.3.1",
+    "express": "5.2.1",
+    "winston": "3.19.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.13",
+    "@types/express": "5.0.6",
+    "@types/jest": "30.0.0",
+    "@types/node": "25.3.0",
+    "@types/winston": "2.4.4",
+    "@typescript-eslint/eslint-plugin": "8.56.0",
+    "@typescript-eslint/parser": "8.56.0",
+    "eslint": "10.0.1",
+    "jest": "30.2.0",
+    "ts-jest": "29.4.6",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
+  }
+}
