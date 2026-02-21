@@ -5,6 +5,7 @@ import { processEvent } from './processor';
 import { appendHistory } from './history';
 import { createApp as createServerApp, type CreateAppOptions } from './server';
 import type { ProcessEventInput } from './webhook';
+import { validateTokens } from './startup';
 
 dotenv.config();
 
@@ -84,11 +85,23 @@ const defaultOnProcessEvent = async (input: ProcessEventInput): Promise<void> =>
 export const createApp = (options: CreateAppOptions = {}) =>
   createServerApp({ ...options, onProcessEvent: options.onProcessEvent ?? defaultOnProcessEvent });
 
-if (require.main === module) {
+export const startCli = async (): Promise<void> => {
   const parsedPort = Number.parseInt(process.env.PORT ?? '', 10);
   const port = Number.isNaN(parsedPort) ? DEFAULT_PORT : parsedPort;
+
+  try {
+    await validateTokens();
+  } catch {
+    console.error('FATAL: Startup token validation failed. Exiting.');
+    process.exitCode = 1;
+    return;
+  }
 
   createApp().listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });
+};
+
+if (require.main === module) {
+  void startCli();
 }

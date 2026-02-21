@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "eslint \"src/**/*.ts\" --format json",
     "typecheck": "tsc --noEmit",
-    "integration-test": "echo \"Integration tests not implemented yet\""
+    "integration-test": "jest --runInBand --runTestsByPath src/startup.test.ts src/index.startup.test.ts"
   },
   "repository": {
     "type": "git",
