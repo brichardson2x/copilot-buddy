@@ -1,6 +1,14 @@
 # copilot-buddy
 
-GitHub webhook service that routes issue and PR comments to Copilot, posts responses, and tracks thread state in SQLite.
+Run Copilot on your own servers and interact with your GitHub repos without using up GitHub compute or dealing with the limitations of an ephemeral Copilot instance.
+
+Copilot Buddy is a self-hosted GitHub webhook service that brings Copilot AI into your issue and PR workflows on infrastructure you control:
+
+- **Webhook listener** — validates and processes GitHub issue/PR comment events
+- **Mention-triggered** — Copilot only responds when your bot handle is mentioned, keeping noise low
+- **Persistent context** — conversation history stored in SQLite so every reply is fully context-aware
+- **Reliable task queue** — events are queued and tracked (queued → running → complete/failed) so nothing gets dropped under load
+- **Model-flexible** — override the Copilot model per-comment for different tasks
 
 ## Setup
 
