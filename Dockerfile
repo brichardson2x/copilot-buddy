@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:22-slim
 
 ARG DOCKER_GID=999
 ARG ACT_VERSION=0.2.75

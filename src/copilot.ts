@@ -22,8 +22,14 @@ export class CopilotError extends Error {
   }
 }
 
+type CopilotSdkModule = typeof import('@github/copilot-sdk');
+const dynamicImport = new Function(
+  'modulePath',
+  'return import(modulePath);'
+) as (modulePath: string) => Promise<CopilotSdkModule>;
+
 const defaultCopilotClientFactory = async (): Promise<CopilotClientLike> => {
-  const { CopilotClient } = await import('@github/copilot-sdk');
+  const { CopilotClient } = await dynamicImport('@github/copilot-sdk');
   return new CopilotClient({
     githubToken: process.env.COPILOT_GITHUB_TOKEN,
     useLoggedInUser: !process.env.COPILOT_GITHUB_TOKEN
