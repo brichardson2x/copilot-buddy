@@ -23,6 +23,15 @@ describe('prompt helpers', () => {
     expect(parsed.strippedBody).toBe('run this');
   });
 
+  it('parses model token and keeps trailing text in body', () => {
+    const parsed = parseModelOverride('Hello\nMODEL: gpt-5-mini please summarize\nWorld');
+
+    expect(parsed).toEqual({
+      modelOverride: 'gpt-5-mini',
+      strippedBody: 'Hello\nplease summarize\nWorld'
+    });
+  });
+
   it('resolves override first and then AGENT_MODEL fallback', () => {
     process.env.AGENT_MODEL = 'gpt-fallback';
 

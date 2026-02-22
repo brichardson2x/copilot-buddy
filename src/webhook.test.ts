@@ -145,13 +145,40 @@ describe('POST /webhook', () => {
     }
   });
 
+  it('returns 202 for non-mention issue comments', async () => {
+    const payload = JSON.stringify({
+      action: 'created',
+      sender: { login: 'octocat' },
+      repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
+      issue: { number: 12, body: 'issue body' },
+      comment: { body: 'please run' }
+    });
+    const onProcessEvent = jest.fn().mockResolvedValue(undefined);
+    const server = await startServer(onProcessEvent);
+
+    try {
+      const status = await postWebhook(server, payload, {
+        'x-github-event': 'issue_comment',
+        'x-github-delivery': 'evt-no-mention',
+        'x-hub-signature-256': createSignature(payload)
+      });
+
+      expect(status).toBe(202);
+      expect(mockedGetEventById).toHaveBeenCalledWith('evt-no-mention');
+      expect(mockedInsertEvent).not.toHaveBeenCalled();
+      expect(onProcessEvent).not.toHaveBeenCalled();
+    } finally {
+      await stopServer(server);
+    }
+  });
+
   it('accepts valid webhook with async callback and mocked DB helpers', async () => {
     const payload = JSON.stringify({
       action: 'created',
       sender: { login: 'octocat' },
       repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
       issue: { number: 42, body: 'issue body' },
-      comment: { body: 'please run' }
+      comment: { body: '@agent-bot please run' }
     });
     mockedInsertEvent.mockReturnValue(123);
     const onProcessEvent = jest.fn().mockResolvedValue(undefined);
@@ -187,7 +214,7 @@ describe('POST /webhook', () => {
           threadType: 'issue',
           threadNumber: 42,
           threadKey: 'acme-project-issue-42',
-          commentBody: 'please run',
+          commentBody: '@agent-bot please run',
           eventType: 'issue_comment',
           action: 'created'
         }
