@@ -1,8 +1,4 @@
-import {
-  CopilotClient,
-  type AssistantMessageEvent,
-  type GetAuthStatusResponse
-} from '@github/copilot-sdk';
+import type { AssistantMessageEvent, GetAuthStatusResponse } from '@github/copilot-sdk';
 
 export interface CopilotSessionLike {
   sendAndWait(options: { prompt: string }, timeout?: number): Promise<AssistantMessageEvent | undefined>;
@@ -26,15 +22,17 @@ export class CopilotError extends Error {
   }
 }
 
-const defaultCopilotClientFactory = (): CopilotClientLike =>
-  new CopilotClient({
+const defaultCopilotClientFactory = async (): Promise<CopilotClientLike> => {
+  const { CopilotClient } = await import('@github/copilot-sdk');
+  return new CopilotClient({
     githubToken: process.env.COPILOT_GITHUB_TOKEN,
     useLoggedInUser: !process.env.COPILOT_GITHUB_TOKEN
   });
+};
 
-let copilotClientFactory: () => CopilotClientLike = defaultCopilotClientFactory;
+let copilotClientFactory: () => Promise<CopilotClientLike> = defaultCopilotClientFactory;
 
-export function setCopilotClientFactory(factory: () => CopilotClientLike): void {
+export function setCopilotClientFactory(factory: () => Promise<CopilotClientLike>): void {
   copilotClientFactory = factory;
 }
 
@@ -43,7 +41,7 @@ export function resetCopilotClientFactory(): void {
 }
 
 export async function callCopilot(prompt: string, model?: string): Promise<string> {
-  const client = copilotClientFactory();
+  const client = await copilotClientFactory();
   let session: CopilotSessionLike | undefined;
 
   try {
@@ -71,7 +69,7 @@ export async function callCopilot(prompt: string, model?: string): Promise<strin
 }
 
 export async function validateCopilotToken(): Promise<boolean> {
-  const client = copilotClientFactory();
+  const client = await copilotClientFactory();
 
   try {
     await client.start();
