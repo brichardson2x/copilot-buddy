@@ -10,7 +10,10 @@ export interface ParsedModelOverride {
 }
 
 export interface BuildPromptInput {
-  context: Pick<ParsedWebhookContext, 'owner' | 'repo' | 'threadType' | 'threadNumber' | 'sender'>;
+  context: Pick<
+    ParsedWebhookContext,
+    'owner' | 'repo' | 'threadType' | 'threadNumber' | 'sender' | 'eventType'
+  >;
   history: string;
   message: string;
   reviewer?: string;
@@ -74,7 +77,11 @@ export function buildPrompt(input: BuildPromptInput): string {
   sections.push(
     [
       `Repository: ${input.context.owner}/${input.context.repo}`,
+      `Repository Remote (SSH): git@github.com:${input.context.owner}/${input.context.repo}.git`,
+      `Repository Remote (HTTPS): https://github.com/${input.context.owner}/${input.context.repo}.git`,
+      `Preferred Local Repo Path: ${(process.env.HOME_PATH ?? '/home/agent').trim()}/${input.context.repo}`,
       `Thread: ${input.context.threadType} #${input.context.threadNumber}`,
+      `Event: ${input.context.eventType}`,
       `Sender: @${input.context.sender}`,
       `Reviewer: @${reviewer}`,
       `Timestamp: ${timestamp}`

@@ -27,4 +27,6 @@ fi
 
 mkdir -p "${HOME_PATH}/.history" "${HOME_PATH}/data"
 
-exec node dist/index.js
+cd "${HOME_PATH}"
+
+exec node /app/dist/index.js

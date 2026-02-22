@@ -16,7 +16,7 @@ services:
       - ./certs:/certs:ro
       - ${SSH_PRIVATE_KEY_PATH:-/home/brandon/.ssh/id_rsa}:/run/ssh/id_rsa:ro
       - home_path:${HOME_PATH}
-      - buddy-data:/app/data
+      - buddy-data:${HOME_PATH}/data
 
 volumes:
   home_path:

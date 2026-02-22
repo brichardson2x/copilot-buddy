@@ -29,6 +29,7 @@ const dynamicImport = new Function(
 ) as (modulePath: string) => Promise<CopilotSdkModule>;
 const SQLITE_WARNING_SUPPRESSION_FLAG = '--no-warnings=ExperimentalWarning';
 const DEFAULT_COPILOT_TIMEOUT_MS = 60_000;
+const resolveCopilotCwd = (): string => (process.env.HOME_PATH ?? '').trim() || process.cwd();
 
 const withSuppressedExperimentalWarnings = (nodeOptions: string | undefined): string => {
   const normalizedNodeOptions = (nodeOptions ?? '').trim();
@@ -66,6 +67,7 @@ const defaultCopilotClientFactory = async (): Promise<CopilotClientLike> => {
   return new CopilotClient({
     githubToken: process.env.COPILOT_GITHUB_TOKEN,
     useLoggedInUser: !process.env.COPILOT_GITHUB_TOKEN,
+    cwd: resolveCopilotCwd(),
     env: {
       ...process.env,
       NODE_OPTIONS: withSuppressedExperimentalWarnings(process.env.NODE_OPTIONS)
