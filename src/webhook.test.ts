@@ -172,6 +172,32 @@ describe('POST /webhook', () => {
     }
   });
 
+  it('returns 202 for opened issues without bot mention', async () => {
+    const payload = JSON.stringify({
+      action: 'opened',
+      sender: { login: 'octocat' },
+      repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
+      issue: { number: 13, body: 'new issue body without mention' }
+    });
+    const onProcessEvent = jest.fn().mockResolvedValue(undefined);
+    const server = await startServer(onProcessEvent);
+
+    try {
+      const status = await postWebhook(server, payload, {
+        'x-github-event': 'issues',
+        'x-github-delivery': 'evt-opened-no-mention',
+        'x-hub-signature-256': createSignature(payload)
+      });
+
+      expect(status).toBe(202);
+      expect(mockedGetEventById).toHaveBeenCalledWith('evt-opened-no-mention');
+      expect(mockedInsertEvent).not.toHaveBeenCalled();
+      expect(onProcessEvent).not.toHaveBeenCalled();
+    } finally {
+      await stopServer(server);
+    }
+  });
+
   it('accepts valid webhook with async callback and mocked DB helpers', async () => {
     const payload = JSON.stringify({
       action: 'created',

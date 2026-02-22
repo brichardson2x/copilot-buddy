@@ -223,9 +223,7 @@ export const createWebhookHandler = (
       return res.sendStatus(400);
     }
 
-    const isCommentEvent =
-      eventType === 'issue_comment' || eventType === 'pull_request_review_comment';
-    if (isCommentEvent && botHandle && !hasBotMention(context.commentBody, botHandle)) {
+    if (botHandle && !hasBotMention(context.commentBody, botHandle)) {
       return res.sendStatus(202);
     }
 
