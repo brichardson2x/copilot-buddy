@@ -17,6 +17,29 @@ GitHub webhook service that routes issue and PR comments to Copilot, posts respo
    npm run build
    ```
 
+### Required environment variables
+
+Set these in `.env` (see `.env.example`):
+
+- `COPILOT_GITHUB_TOKEN`: token used by Copilot SDK.
+- `GH_TOKEN`: GitHub CLI token.
+- `WEBHOOK_SECRET`: webhook signature secret.
+- `GITHUB_APP_ID`: GitHub App ID.
+- `GITHUB_APP_PRIVATE_KEY_PATH`: path to the GitHub App private key **.pem** file.
+- `GITHUB_APP_INSTALLATION_ID`: GitHub App installation ID.
+- `GITHUB_APP_CLIENT_ID`: GitHub App client ID.
+- `BOT_HANDLE`: bot username (without `@`).
+- `AGENT_MODEL`: default model name.
+- `HOME_PATH`: runtime home directory used as default working directory.
+- `SSH_PRIVATE_KEY_PATH`: host path to SSH private key (for git clone/push in container), e.g. `~/.ssh/id_rsa`.
+
+### Docker/runtime notes
+
+- Container startup configures git to use SSH when `SSH_PRIVATE_KEY_PATH` is provided.
+- HTTPS GitHub remotes are rewritten to SSH form to avoid username/password prompts in container workflows.
+- Runtime cwd is `HOME_PATH`, and service data is stored under `HOME_PATH/data`.
+- Ensure your GitHub App private key `.pem` file is present at `GITHUB_APP_PRIVATE_KEY_PATH` and mounted/readable by the container.
+
 ## Usage
 
 - Local dev:
