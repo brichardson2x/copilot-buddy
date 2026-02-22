@@ -162,7 +162,7 @@ describe('createApp default async processing', () => {
       sender: { login: 'octocat' },
       repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
       issue: { number: 42, body: 'issue body' },
-      comment: { body: 'please run' }
+      comment: { body: '@agent-bot please run' }
     });
     const server = await startServer();
 
@@ -204,7 +204,7 @@ describe('createApp default async processing', () => {
       sender: { login: 'octocat' },
       repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
       issue: { number: 11, body: 'issue body' },
-      comment: { body: 'MODEL: gpt-4o\nplease run' }
+      comment: { body: 'MODEL: gpt-4o\n@agent-bot please run' }
     });
     const server = await startServer();
 
@@ -246,7 +246,7 @@ describe('createApp default async processing', () => {
       sender: { login: 'octocat' },
       repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
       issue: { number: 16, body: 'issue body' },
-      comment: { body: 'please run' }
+      comment: { body: '@agent-bot please run' }
     });
     const server = await startServer();
 
@@ -282,7 +282,7 @@ describe('createApp default async processing', () => {
       sender: { login: 'octocat' },
       repository: { full_name: 'acme/project', name: 'project', owner: { login: 'acme' } },
       issue: { number: 15, body: 'issue body' },
-      comment: { body: 'MODEL: gpt-5\nplease summarize this thread' }
+      comment: { body: 'MODEL: gpt-5\n@agent-bot please summarize this thread' }
     });
     const server = await startServer();
 
@@ -308,7 +308,7 @@ describe('createApp default async processing', () => {
       expect(mockedAppendHistory).toHaveBeenCalledWith(
         expect.objectContaining({ threadKey: 'acme-project-issue-15' }),
         [
-          { role: 'User', sender: 'octocat', message: 'please summarize this thread' },
+          { role: 'User', sender: 'octocat', message: '@agent-bot please summarize this thread' },
           { role: 'Agent', message: 'assistant final' }
         ]
       );

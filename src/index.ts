@@ -3,6 +3,7 @@ import { getThreadState, updateEventStatus, updateTaskStatus, upsertThreadState 
 import { postComment } from './github';
 import { processEvent } from './processor';
 import { appendHistory } from './history';
+import { logger } from './logger';
 import { createApp as createServerApp, type CreateAppOptions } from './server';
 import type { ProcessEventInput } from './webhook';
 import { validateTokens } from './startup';
@@ -65,6 +66,11 @@ const defaultOnProcessEvent = async (input: ProcessEventInput): Promise<void> =>
     updateTaskStatus(taskId, 'done');
     updateEventStatus(input.eventId, 'done');
   } catch (error) {
+    logger.error('Event processing failed', {
+      eventId: input.eventId,
+      threadKey: input.context.threadKey,
+      error: error instanceof Error ? error.message : String(error)
+    });
     if (taskId !== undefined) {
       updateTaskStatus(taskId, 'failed');
     }
@@ -76,8 +82,11 @@ const defaultOnProcessEvent = async (input: ProcessEventInput): Promise<void> =>
         input.context.threadNumber,
         PROCESSING_FAILURE_MESSAGE
       );
-    } catch {
-      // best-effort error response
+    } catch (commentError) {
+      logger.error('Failed to post error comment', {
+        eventId: input.eventId,
+        error: commentError instanceof Error ? commentError.message : String(commentError)
+      });
     }
   }
 };

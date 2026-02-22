@@ -49,6 +49,17 @@ const readNumber = (record: Record<string, unknown>, key: string): number | unde
   return typeof value === 'number' ? value : undefined;
 };
 
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const hasBotMention = (message: string | null, botHandle: string): boolean => {
+  if (!message || !botHandle) {
+    return false;
+  }
+
+  const mentionRegex = new RegExp(`(^|[^A-Za-z0-9-])@${escapeRegex(botHandle)}(?![A-Za-z0-9-])`, 'i');
+  return mentionRegex.test(message);
+};
+
 const isAcceptedEvent = (
   eventType: string | undefined,
   action: string | undefined
@@ -210,6 +221,10 @@ export const createWebhookHandler = (
     const context = parseThreadContext(eventType, action, payload);
     if (!context) {
       return res.sendStatus(400);
+    }
+
+    if (botHandle && !hasBotMention(context.commentBody, botHandle)) {
+      return res.sendStatus(202);
     }
 
     const eventRowId = insertEvent({

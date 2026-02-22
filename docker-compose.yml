@@ -7,13 +7,17 @@ services:
         DOCKER_GID: ${DOCKER_GID:-999}
     env_file:
       - .env
+    environment:
+      SSH_PRIVATE_KEY_PATH: /run/ssh/id_rsa
     ports:
       - "${PORT}:${PORT}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./certs:/certs:ro
+      - ${SSH_PRIVATE_KEY_PATH:-/home/brandon/.ssh/id_rsa}:/run/ssh/id_rsa:ro
       - home_path:${HOME_PATH}
-      - ./data:/app/data
+      - buddy-data:${HOME_PATH}/data
 
 volumes:
   home_path:
+  buddy-data:

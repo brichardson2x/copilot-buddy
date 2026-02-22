@@ -23,6 +23,15 @@ describe('prompt helpers', () => {
     expect(parsed.strippedBody).toBe('run this');
   });
 
+  it('parses model token and keeps trailing text in body', () => {
+    const parsed = parseModelOverride('Hello\nMODEL: gpt-5-mini please summarize\nWorld');
+
+    expect(parsed).toEqual({
+      modelOverride: 'gpt-5-mini',
+      strippedBody: 'Hello\nplease summarize\nWorld'
+    });
+  });
+
   it('resolves override first and then AGENT_MODEL fallback', () => {
     process.env.AGENT_MODEL = 'gpt-fallback';
 
@@ -39,7 +48,8 @@ describe('prompt helpers', () => {
         repo: 'project',
         threadType: 'issue',
         threadNumber: 42,
-        sender: 'octocat'
+        sender: 'octocat',
+        eventType: 'issues'
       },
       reviewer: 'reviewer1',
       timestamp: '2026-02-21T14:30:00Z',
@@ -50,7 +60,7 @@ describe('prompt helpers', () => {
     expect(prompt).toBe(
       [
         'System line',
-        'Repository: acme/project\nThread: issue #42\nSender: @octocat\nReviewer: @reviewer1\nTimestamp: 2026-02-21T14:30:00Z',
+        'Repository: acme/project\nRepository Remote (SSH): git@github.com:acme/project.git\nRepository Remote (HTTPS): https://github.com/acme/project.git\nPreferred Local Repo Path: /home/agent/project\nThread: issue #42\nEvent: issues\nSender: @octocat\nReviewer: @reviewer1\nTimestamp: 2026-02-21T14:30:00Z',
         'No prior history.',
         'Current body'
       ].join('\n\n')
