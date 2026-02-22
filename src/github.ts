@@ -1,4 +1,5 @@
 import { createSign } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { Octokit } from '@octokit/rest';
 
@@ -17,6 +18,25 @@ const requireEnv = (name: RequiredEnvVar): string => {
   return value;
 };
 
+export const resolvePrivateKeyPath = (
+  configuredPath: string,
+  pathExists: (path: string) => boolean = existsSync
+): string => {
+  if (pathExists(configuredPath)) {
+    return configuredPath;
+  }
+
+  const normalizedPath = configuredPath.replace(/^\.\//, '');
+  if (normalizedPath.startsWith('certs/')) {
+    const containerMountedPath = `/${normalizedPath}`;
+    if (pathExists(containerMountedPath)) {
+      return containerMountedPath;
+    }
+  }
+
+  return configuredPath;
+};
+
 export class GitHubAuthClient {
   private readonly appId = requireEnv('GITHUB_APP_ID');
   private readonly privateKeyPath = requireEnv('GITHUB_APP_PRIVATE_KEY_PATH');
@@ -30,7 +50,8 @@ export class GitHubAuthClient {
   }
 
   private async createAppJwt(): Promise<string> {
-    const privateKey = await readFile(this.privateKeyPath, 'utf8');
+    const resolvedPrivateKeyPath = resolvePrivateKeyPath(this.privateKeyPath);
+    const privateKey = await readFile(resolvedPrivateKeyPath, 'utf8');
     const now = Math.floor(Date.now() / 1000);
     const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
     const payload = Buffer.from(
