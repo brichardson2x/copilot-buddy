@@ -86,3 +86,5 @@ Set these in `.env` (see `.env.example`):
 - `src/copilot.ts`: Copilot SDK integration and token validation helper.
 - `src/startup.ts`: startup auth validation (`gh auth status` + Copilot auth check).
 - `src/db.ts` + `src/history.ts`: SQLite-backed event/task/thread and transcript persistence.
+
+test123
